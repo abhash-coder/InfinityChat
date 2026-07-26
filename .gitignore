@@ -1,0 +1,25 @@
+# Node & npm
+node_modules/
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+package-lock.xml
+pnpm-lock.yaml
+
+# Capacitor generated native folders (re‑generated on sync)
+android/
+ios/
+build/
+dist/
+
+# Generated backup / temporary files
+infinity_backup.json
+*.log
+
+# IDE / OS files
+.DS_Store
+Thumbs.db
+*.sublime-workspace
+*.sublime-project
+.vscode/
+.idea/

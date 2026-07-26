@@ -1,0 +1,25 @@
+{
+  "name": "htmx-mcp-chat",
+  "version": "1.0.0",
+  "description": "Vanilla JS / HTMX Chat with an SSE HTTP MCP Server",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "mcp": "node server.js",
+    "sync-capacitor": "npx cap sync",
+    "build-android": "npm run sync-capacitor && npx cap open android && echo \"Build the APK from Android Studio\"",
+    "clean": "rm -rf android node_modules && npm install"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  }
+}

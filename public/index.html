@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024, user-scalable=no, maximum-scale=1.0">
+    <title>InfinityChat - Premium Agentic Studio</title>
+    <!-- Outfit Font & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <!-- Backdrop overlay for modal closures -->
+    <div id="drawer-backdrop" class="drawer-backdrop hidden" onclick="closeAllDrawers()"></div>
+
+    <div class="app-container" id="app-wrapper">
+        
+        <!-- Expanded Left Navigation Sidebar Drawer -->
+        <aside class="sidebar-icons-only" id="icon-sidebar">
+            <div class="sidebar-header-branding">
+                <div class="sidebar-logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent-grad">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <span class="logo-text">InfinityChat</span>
+            </div>
+            
+            <div class="sidebar-nav-list">
+                <!-- New Chat Trigger -->
+                <button class="nav-list-item" onclick="startNewChat()" title="Start New Chat Session">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>New Chat</span>
+                </button>
+
+                <!-- Project Manager Trigger -->
+                <button class="nav-list-item" onclick="toggleDrawer('projects')" title="Manage Projects">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </button>
+
+                <!-- Connectors Trigger -->
+                <button class="nav-list-item" onclick="toggleDrawer('connectors')" title="Integrate Connectors">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    </svg>
+                    <span>Connectors</span>
+                </button>
+
+                <!-- Templates Trigger -->
+                <button class="nav-list-item" onclick="toggleDrawer('templates')" title="Starter Templates">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                    <span>Templates</span>
+                </button>
+
+                <!-- Settings Drawer Trigger -->
+                <button class="nav-list-item" onclick="toggleDrawer('settings')" title="Configure Profiles">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>Settings</span>
+                </button>
+
+                <!-- Tools Drawer Trigger -->
+                <button class="nav-list-item" onclick="toggleDrawer('tools')" title="Action Library">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    <span>Action Library</span>
+                </button>
+
+                <!-- Account Profile Trigger -->
+                <button class="nav-list-item" onclick="openAccountModal()" title="View Account Profile">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Profile Details</span>
+                </button>
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Chat History Stored List -->
+            <div class="sidebar-chats-container">
+                <div class="chats-title">Recent Conversations</div>
+                <div id="chats-history-list" class="chats-history-list">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Panel -->
+        <main class="chat-workspace" id="tab-chat">
+            <header class="app-header">
+                <div class="header-left">
+                    <!-- Hamburger Toggle Button -->
+                    <button class="icon-btn hamburger-btn" onclick="toggleIconSidebar()" title="Toggle Sidebar Menu">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="status-indicator">
+                        <span class="dot active"></span>
+                        <select id="header-model-picker" style="background: transparent; border: none; padding: 2px 8px; color: var(--text-primary); font-size: 13px; font-weight: 600; outline: none; cursor: pointer; max-width: 180px; width: auto;" onchange="switchHeaderModel(this.value)">
+                            <option value="">No Active Provider</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn temp-chat-btn" id="temp-chat-toggle" onclick="toggleTemporaryMode()" title="Toggle Temporary Mode (Self-destructs in 24 hrs)">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="chat-viewport" id="chat-messages">
+                <!-- Gemini Style Welcome Screen -->
+                <div class="welcome-container" id="welcome-screen">
+                    <div class="welcome-sparkle">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" fill="url(#sparkle-grad)"/>
+                            <defs>
+                                <linearGradient id="sparkle-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#9333EA"/>
+                                    <stop offset="0.5" stop-color="#3B82F6"/>
+                                    <stop offset="1" stop-color="#60A5FA"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h1 class="welcome-title">Hello, how can I help you today?</h1>
+                    <p class="welcome-subtitle">Your workspace is ready to write, code, search, and perform diagnostic operations.</p>
+                    
+                    <div class="suggestion-grid">
+                        <div class="suggestion-card" onclick="useSuggestion('What is my current system memory usage?')">
+                            <span class="icon-svg-wrapper">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <div class="text">
+                                <h4>System Diagnostics</h4>
+                                <p>Check current memory usage and limits</p>
+                            </div>
+                        </div>
+                        <div class="suggestion-card" onclick="useSuggestion('List files in the current folder')">
+                            <span class="icon-svg-wrapper">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            </span>
+                            <div class="text">
+                                <h4>File Explorer</h4>
+                                <p>Look up directories and file details</p>
+                            </div>
+                        </div>
+                        <div class="suggestion-card" onclick="useSuggestion('Generate a random UUID and sha256 hash it')">
+                            <span class="icon-svg-wrapper">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </span>
+                            <div class="text">
+                                <h4>Utilities Workspace</h4>
+                                <p>Create random UUIDs and text hashes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intermediary live execution status logs -->
+            <div id="agent-action-bar" class="agent-action-bar hidden">
+                <!-- Injected live steps during assistant turns -->
+            </div>
+
+            <!-- Pill-Shaped Chat Input Footer -->
+            <footer class="chat-footer">
+                <!-- Floating Slash Commands Autocomplete Popover -->
+                <div id="autocomplete-popover" class="autocomplete-popover hidden">
+                    <!-- Populated dynamically via JS matching -->
+                </div>
+
+                <!-- Floating Plus Menu Dropdown panel -->
+                <div id="plus-menu-dropdown" class="plus-dropdown hidden">
+                    <div class="plus-dropdown-row">
+                        <button class="row-icon-btn" type="button" onclick="triggerPlusAction('add_file')" title="Add File">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        </button>
+                        <button class="row-icon-btn" type="button" onclick="triggerPlusAction('add_image')" title="Add Image">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        </button>
+                        <button class="row-icon-btn" type="button" onclick="triggerPlusAction('camera')" title="Camera">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        </button>
+                        <button class="row-icon-btn" type="button" onclick="triggerPlusAction('click_picture')" title="Click Picture">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <div class="plus-dropdown-divider"></div>
+                    <div class="plus-dropdown-item" onclick="triggerPlusAction('images')">
+                        <div class="title">Images</div>
+                        <div class="desc">create and edit</div>
+                    </div>
+                    <div class="plus-dropdown-item" onclick="triggerPlusAction('canvas')">
+                        <div class="title">Canvas</div>
+                        <div class="desc">code, write or make slides {ideal for single file code and writing essay and much more}</div>
+                    </div>
+                    <div class="plus-dropdown-item" onclick="triggerPlusAction('deep_research')">
+                        <div class="title">Deep Research</div>
+                        <div class="desc">get detailed reports</div>
+                    </div>
+                    <div class="plus-dropdown-item" onclick="triggerPlusAction('guided_learning')">
+                        <div class="title">Guided Learning</div>
+                        <div class="desc">get step by step help</div>
+                    </div>
+                    <div class="plus-dropdown-divider"></div>
+                    <div class="plus-dropdown-toggle-item">
+                        <div class="meta">
+                            <div class="title">Personal Intelligence</div>
+                            <div class="desc">personalise chat if helpful</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="personal-intelligence-toggle" onchange="togglePersonalIntelligence(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <form id="chat-form" onsubmit="sendMessage(event)">
+                    <button type="button" class="input-icon-btn" onclick="togglePlusMenu(event)" title="More Options">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+
+                      <div class="input-controls" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                        <select id="chat-mode-select" class="input-mode-select" onchange="setChatMode(this.value)" title="Select Interaction Mode" style="background:transparent; border:1px solid var(--border-color); color:var(--text-primary); padding:4px 8px; border-radius:4px;">
+                          <option value="chat">Chat</option>
+                          <option value="plan">Plan</option>
+                          <option value="build">Build</option>
+                        </select>
+                        <button type="button" class="input-icon-btn" id="voice-input-btn" onclick="toggleVoiceInput()" title="Voice Input (Off)" style="margin-right:4px;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                        </button>
+                        <textarea id="chat-input" placeholder="Ask anything, type / for commands..." required oninput="handleInputAutocomplete(this)" onkeydown="handleInputKeys(event)"></textarea>
+                      </div>
+
+                    <!-- Speak Response Toggle Button -->
+                    <button type="button" class="input-icon-btn" id="voice-toggle-btn" onclick="toggleVoiceOutput()" title="Voice Response Output (Off)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+
+                    <button type="submit" class="send-btn-pill" id="send-button" title="Send Message">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+                <div class="footer-notice">InfinityChat may display inaccurate info, so double-check its responses.</div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Centered Settings Panel Modal Overlay -->
+    <div id="tab-settings" class="modal hidden">
+        <div class="modal-content settings-modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Settings</h3>
+                <button class="close-btn" onclick="toggleDrawer('settings')">×</button>
+            </div>
+            
+            <nav class="sidebar-sections">
+                <div class="section-title">Configure Profiles</div>
+                
+                <div class="card provider-config">
+                    <label>Select Provider</label>
+                    <button class="btn btn-secondary catalog-trigger-btn" id="provider-trigger-btn" onclick="openProviderCatalog()">Select Provider...</button>
+
+                    <label for="model-input">Select or Type Model</label>
+                    <div class="model-select-wrapper">
+                        <div class="custom-select-wrapper">
+                            <div class="select-field">
+                                <input type="text" id="model-input" placeholder="Select or type model..." onfocus="showCustomDropdown()" oninput="filterCustomDropdown(this.value)">
+                                <button class="arrow-btn" type="button" onclick="toggleCustomDropdown(event)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                            </div>
+                            <div id="custom-model-dropdown" class="custom-dropdown hidden">
+                                <!-- Populated dynamically by client.js -->
+                            </div>
+                        </div>
+                        
+                        <button class="icon-btn fetch-models-btn" id="fetch-models-trigger" type="button" onclick="fetchActiveModels()" title="Fetch all valid models from API key">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div id="custom-provider-fields" class="hidden">
+                        <label for="custom-url">Base URL</label>
+                        <input type="text" id="custom-url" placeholder="http://localhost:8000/v1">
+                    </div>
+
+                    <label for="provider-key">API Key (if required)</label>
+                    <input type="password" id="provider-key" placeholder="Enter key here">
+
+                    <button class="btn btn-primary" id="save-provider-btn">Activate & Add Profile</button>
+                </div>
+
+                <div class="section-title">Active Profiles</div>
+                <div class="card rotation-loop-list" id="rotation-list">
+                    <p class="empty-text">No profiles configured yet.</p>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Centered Tools Cabinet Modal Overlay -->
+    <div id="tab-tools" class="modal hidden">
+        <div class="modal-content tools-modal-content">
+            <div class="modal-header">
+                <h3>🛠️ Action Library</h3>
+                <button class="close-btn" onclick="toggleDrawer('tools')">×</button>
+            </div>
+            <div class="tool-search-box">
+                <input type="text" id="tool-search" placeholder="Search capabilities..." oninput="filterTools()">
+            </div>
+            
+            <div class="tool-list" id="tool-cabinet">
+                <!-- Tools populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Centered Projects Cabinet Modal Overlay -->
+    <div id="tab-projects" class="modal hidden">
+        <div class="modal-content tools-modal-content">
+            <div class="modal-header">
+                <h3>📁 Project Manager</h3>
+                <button class="close-btn" onclick="toggleDrawer('projects')">×</button>
+            </div>
+            
+            <div class="card" style="margin-bottom: 16px; flex-direction: row; gap: 8px; align-items: center; background: rgba(30,41,59,0.3);">
+                <input type="text" id="new-project-name" placeholder="Enter new project folder name..." style="flex: 1; height: 38px;">
+                <button class="btn btn-primary" onclick="createNewProject()" style="height: 38px; padding: 0 16px;">Create Project</button>
+            </div>
+            
+            <div class="section-title" style="margin-bottom: 8px;">Workspace Folders (/root/workspace/)</div>
+            <div class="tool-list" id="projects-list-cabinet" style="max-height: 45vh; overflow-y: auto;">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Connected Apps Cabinet Modal Overlay -->
+    <div id="tab-connectors" class="modal hidden">
+        <div class="modal-content tools-modal-content">
+            <div class="modal-header">
+                <h3>🔌 Connected Apps</h3>
+                <button class="close-btn" onclick="toggleDrawer('connectors')">×</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Sync your workspaces and retrieve personalized information context automatically.</p>
+            <div class="tool-list">
+                <div class="tool-item">
+                    <div class="tool-item-header">
+                        <span class="name" style="color: #4F46E5;">Notion Workspace</span>
+                        <label class="switch"><input type="checkbox" onchange="toggleConnector('notion', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <p>Access notes, journals, and project database tables dynamically.</p>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-item-header">
+                        <span class="name" style="color: #60A5FA;">GitHub Sync</span>
+                        <label class="switch"><input type="checkbox" onchange="toggleConnector('github', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <p>Scans repositories, pull requests, and commit histories.</p>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-item-header">
+                        <span class="name" style="color: #E11D48;">Gmail Connector</span>
+                        <label class="switch"><input type="checkbox" onchange="toggleConnector('gmail', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <p>Retrieve emails, updates, and schedule notifications context.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Centered Templates Cabinet Modal Overlay -->
+    <div id="tab-templates" class="modal hidden">
+        <div class="modal-content tools-modal-content">
+            <div class="modal-header">
+                <h3>📦 Starter Templates Library</h3>
+                <button class="close-btn" onclick="toggleDrawer('templates')">×</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Launch functional prototype workspaces instantly. Created directly inside your workspace sandbox folder.</p>
+            <div class="catalog-grid" style="max-height: 50vh; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <div class="catalog-card" onclick="initializeTemplate('html5_game')">
+                    <div class="name" style="color: #60A5FA;">HTML5 Canvas Game</div>
+                    <div class="desc">Interactive 2D game loops prototype.</div>
+                </div>
+                <div class="catalog-card" onclick="initializeTemplate('python_cli')">
+                    <div class="name" style="color: #10B981;">Python Scripting Utility</div>
+                    <div class="desc">Preconfigured scripts parsing CLI flags.</div>
+                </div>
+                <div class="catalog-card" onclick="initializeTemplate('react_dashboard')">
+                    <div class="name" style="color: #A855F7;">React Admin Shell</div>
+                    <div class="desc">Dashboard widgets grid system mockup.</div>
+                </div>
+                <div class="catalog-card" onclick="initializeTemplate('nextjs_landing')">
+                    <div class="name" style="color: #F59E0B;">Next.js Landing page</div>
+                    <div class="desc">Aesthetics grid landing page prototype layout.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Centered Authentication Overlay Dialog -->
+    <div id="auth-modal" class="modal open">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-header" style="justify-content: center;">
+                <h3 id="auth-modal-title">Create Developer Account</h3>
+            </div>
+            
+            <div class="card" id="auth-form-fields" style="background: transparent; border: none; padding: 0;">
+                <label for="auth-email">Email Address</label>
+                <input type="email" id="auth-email" placeholder="name@domain.com" style="margin-bottom: 12px;">
+                <label for="auth-password">Password</label>
+                <input type="password" id="auth-password" placeholder="••••••••" style="margin-bottom: 16px;">
+                
+                <button class="btn btn-primary" id="auth-submit-btn" onclick="handleAuthSubmit()" style="width: 100%; margin-bottom: 12px;">Sign Up</button>
+            </div>
+            
+            <div class="plus-dropdown-divider" style="margin: 12px 0;"></div>
+            
+            <!-- SSO Login Buttons Row -->
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;">
+                <button class="btn btn-secondary" onclick="handleSSOLogin('Google')" style="flex: 1; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0;">
+                    Google
+                </button>
+                <button class="btn btn-secondary" onclick="handleSSOLogin('GitHub')" style="flex: 1; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0;">
+                    GitHub
+                </button>
+            </div>
+
+            <div style="text-align: center; font-size: 12px; height: 20px;">
+                <span id="auth-modal-toggle-text" style="color: var(--text-secondary); cursor: pointer;" onclick="toggleAuthMode()">
+                    Existing user? Try signing in
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Searchable Provider Catalog Modal -->
+    <div id="catalog-modal" class="modal hidden">
+        <div class="modal-content catalog-modal-content">
+            <div class="catalog-modal-header">
+                <h3>Select Provider Catalog</h3>
+                <button class="close-btn" onclick="closeProviderCatalog()">×</button>
+            </div>
+            <div class="catalog-search-wrapper">
+                <input type="text" id="catalog-search" placeholder="Search 100+ providers..." oninput="filterCatalog(this.value)">
+            </div>
+            <div class="catalog-list" id="catalog-list">
+                <!-- Populated dynamically by client.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- User Account Modal Dialog -->
+    <div id="account-modal" class="modal hidden">
+        <div class="modal-content account-modal-content">
+            <div class="account-modal-header">
+                <h3>Developer Profile & Settings</h3>
+                <button class="close-btn" onclick="closeAccountModal()">×</button>
+            </div>
+            <div class="account-details-box">
+                <div class="account-profile-header">
+                    <div class="large-avatar-svg">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="user-meta">
+                        <h4>Developer Console</h4>
+                        <p class="plan-tag">Free Tier (Tier 0)</p>
+                    </div>
+                </div>
+                
+                <div class="account-stats-grid">
+                    <div class="stat-card">
+                        <span class="label">Daily Request Cap</span>
+                        <span class="value">Unlimited (Rotated)</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Native Tools Enabled</span>
+                        <span class="value">54 Tools</span>
+                    </div>
+                </div>
+                
+                <div class="account-info-sections">
+                    <div class="info-row">
+                        <span>Environment OS:</span>
+                        <strong>Linux (Termux Environment)</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Service Port:</span>
+                        <strong>3000 (SSE Unified Server)</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeAccountModal()">Close Dialog</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Tool Dialog Modal -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>⚠️ Tool Call Request</h3>
+            <p>The AI is requesting permission to execute the following tool:</p>
+            <div class="tool-details-box">
+                <div><strong>Tool Name:</strong> <span id="modal-tool-name"></span></div>
+                <div><strong>Arguments:</strong></div>
+                <pre><code id="modal-tool-args"></code></pre>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="denyToolCall()">Deny</button>
+                <button class="btn btn-primary" onclick="approveToolCall()">Approve Execution</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Sandbox Folder Permission Modal -->
+    <div id="permission-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>⚠️ Sandbox Bypass Warning</h3>
+            <p>The agent is requesting permission to access a file/folder outside of your active sandbox directory:</p>
+            <div class="tool-details-box">
+                <div><strong>Action:</strong> <span id="permission-action"></span></div>
+                <div><strong>Requested Path:</strong> <span id="permission-path"></span></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="denyToolCall()">Deny Access</button>
+                <button class="btn btn-primary" onclick="approveToolCall()">Grant Permission</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Preview Canvas Modal -->
+    <div id="preview-modal" class="modal hidden">
+        <div class="modal-content preview-modal-content">
+            <div class="modal-header">
+                <h3>🌐 Live Canvas Preview</h3>
+                <button class="close-btn" onclick="closePreviewModal()">×</button>
+            </div>
+            <iframe id="preview-iframe" class="preview-iframe"></iframe>
+        </div>
+    </div>
+
+    <script src="/client.js"></script>
+</body>
+</html>
