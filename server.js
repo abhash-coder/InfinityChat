@@ -30,6 +30,45 @@ const toolConfig = {};
 // In-memory visitor IP index
 let knownIps = new Set();
 
+// --- SECURE WORKSPACE CONNECTORS (MOCK DATABASES) ---
+const NOTION_FILE = '/root/workspace/notion_db.json';
+const GITHUB_FILE = '/root/workspace/github_db.json';
+const GMAIL_FILE = '/root/workspace/gmail_db.json';
+
+function initializeMockConnectors() {
+  try {
+    if (!fs.existsSync('/root/workspace')) {
+      fs.mkdirSync('/root/workspace', { recursive: true });
+    }
+    if (!fs.existsSync(NOTION_FILE)) {
+      const notionData = [
+        { id: "note_1", title: "Project Infinity Requirements", content: "Local MCP architecture, Capacitor Android wrapping, PBKDF2 secure login, Custom toasts." },
+        { id: "note_2", title: "Personal Reminders", content: "Configure GitHub workflow actions, test debug APK build, verify local ports binding." }
+      ];
+      fs.writeFileSync(NOTION_FILE, JSON.stringify(notionData, null, 2), 'utf8');
+    }
+    if (!fs.existsSync(GITHUB_FILE)) {
+      const githubData = [
+        { id: "issue_12", title: "Broken Gradle compilation in Capacitor workflow", state: "closed", comment: "Resolved by updating JDK 17 setup-java configuration action." },
+        { id: "pr_45", title: "Implement on-demand lazy tool loader", state: "merged", author: "abhash-coder" }
+      ];
+      fs.writeFileSync(GITHUB_FILE, JSON.stringify(githubData, null, 2), 'utf8');
+    }
+    if (!fs.existsSync(GMAIL_FILE)) {
+      const gmailData = [
+        { id: "email_1", from: "notifications@github.com", subject: "Build Successful: abhash-coder/InfinityChat", body: "Your latest workflow run completed successfully. app-debug.apk is ready for deployment." },
+        { id: "email_2", from: "user@domain.com", subject: "Feature Request: Rounded borders for chat list", body: "Please style chat list elements in dark mode sidebars with 8px rounded corners." }
+      ];
+      fs.writeFileSync(GMAIL_FILE, JSON.stringify(gmailData, null, 2), 'utf8');
+    }
+  } catch(e) {
+    console.error('Failed to initialize mock connector files:', e);
+  }
+}
+
+// Call on startup
+initializeMockConnectors();
+
 // --- SECURE AUTHENTICATION DATABASE & SESSIONS ---
 const USERS_FILE = '/root/workspace/users_db.json';
 const activeSessions = new Map();
@@ -1590,7 +1629,8 @@ if __name__ == "__main__":
   if (req.method === 'POST' && parsedUrl.pathname === '/api/chat') {
     const rawBody = await parseBody(req);
     const body = JSON.parse(rawBody);
-    let { messages } = body;
+    let { messages, attachedFiles, connectors, deepResearch, guidedLearning, personalFacts } = body;
+
     // Apply placeholder resolution to user messages
     messages = messages.map(m => {
       if (m.role === 'user' && typeof m.content === 'string') {
@@ -1598,6 +1638,53 @@ if __name__ == "__main__":
       }
       return m;
     });
+
+    // --- INTEGRATE ACTIVE CONNECTORS CONTEXT ---
+    let connectorContext = '';
+    if (connectors) {
+      if (connectors.notion && fs.existsSync(NOTION_FILE)) {
+        const notionData = fs.readFileSync(NOTION_FILE, 'utf8');
+        connectorContext += `\n[Notion Notes Sync Data]\n${notionData}\n`;
+      }
+      if (connectors.github && fs.existsSync(GITHUB_FILE)) {
+        const githubData = fs.readFileSync(GITHUB_FILE, 'utf8');
+        connectorContext += `\n[GitHub Active Pull Requests & Issues Sync Data]\n${githubData}\n`;
+      }
+      if (connectors.gmail && fs.existsSync(GMAIL_FILE)) {
+        const gmailData = fs.readFileSync(GMAIL_FILE, 'utf8');
+        connectorContext += `\n[Gmail Developer Notifications & Email Sync Data]\n${gmailData}\n`;
+      }
+    }
+
+    // --- INTEGRATE PLUS MENU ATTACHMENTS CONTEXT ---
+    let attachmentsContext = '';
+    if (attachedFiles && attachedFiles.length > 0) {
+      attachmentsContext += '\n[Attached Files / Context Content (Attached by User)]\n';
+      attachedFiles.forEach(file => {
+        attachmentsContext += `File: ${file.name} (Type: ${file.type})\nContent:\n${file.content}\n---\n`;
+      });
+    }
+
+    // --- INTEGRATE PERSONAL INTELLIGENCE ---
+    let personalContext = '';
+    if (personalFacts) {
+      personalContext += `\n[User Personalization Preferences & Facts]\n${personalFacts}\n`;
+    }
+
+    // --- INTEGRATE SPECIAL MODES ---
+    let modesPrompt = '';
+    if (deepResearch) {
+      modesPrompt += `\n[MODE: DEEP RESEARCH] You are requested to perform a detailed step-by-step diagnostic analysis, layout complete technical specification reports, and outline exhaustive answers covering code implementations and system logic where applicable.\n`;
+    }
+    if (guidedLearning) {
+      modesPrompt += `\n[MODE: GUIDED LEARNING] Format your response to teach the user interactively. Break down details into step-by-step progress cards. List tasks as checking items [ ] for the user to practice.\n`;
+    }
+
+    // Prepend gathered contexts to the final user prompt
+    if (messages.length > 0 && messages[messages.length - 1].role === 'user') {
+      const lastMsg = messages[messages.length - 1];
+      lastMsg.content = `${lastMsg.content}\n${connectorContext}${attachmentsContext}${personalContext}${modesPrompt}`;
+    }
 
     if (activeProviders.length === 0) {
       res.writeHead(400, { 'Content-Type': 'application/json' });

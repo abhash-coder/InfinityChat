@@ -1531,12 +1531,32 @@ window.sendMessage = async function(event) {
         const ragContext = getPastChatInfo(prompt);
         history.push({ role: 'user', content: prompt + ragContext });
 
+        // Gather connector toggle states
+        const connectorsState = {
+            notion: localStorage.getItem('connector_notion_active') === 'true',
+            github: localStorage.getItem('connector_github_active') === 'true',
+            gmail: localStorage.getItem('connector_gmail_active') === 'true'
+        };
+
+        const personalFacts = personalIntelligenceActive ? (localStorage.getItem('user_facts') || '') : '';
+
         const res = await fetch(`/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: history })
+            body: JSON.stringify({ 
+                messages: history,
+                attachedFiles: attachedFiles,
+                connectors: connectorsState,
+                deepResearch: activeDeepResearchMode,
+                guidedLearning: activeGuidedLearningMode,
+                personalFacts: personalFacts
+            })
         });
         const data = await res.json();
+
+        // Clear files attached to the current prompt
+        attachedFiles = [];
+        renderAttachmentBadges();
 
         if (data.error) throw new Error(data.error);
 
