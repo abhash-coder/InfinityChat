@@ -13,6 +13,13 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body>
+    <!-- Custom Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Hidden Attachment Inputs -->
+    <input type="file" id="plus-file-input" style="display:none;" onchange="handlePlusFileSelect(event)">
+    <input type="file" id="plus-image-input" accept="image/*" style="display:none;" onchange="handlePlusImageSelect(event)">
+
     <!-- Backdrop overlay for modal closures -->
     <div id="drawer-backdrop" class="drawer-backdrop hidden" onclick="closeAllDrawers()"></div>
 
@@ -515,35 +522,106 @@
                         </svg>
                     </div>
                     <div class="user-meta">
-                        <h4>Developer Console</h4>
-                        <p class="plan-tag">Free Tier (Tier 0)</p>
+                        <h4 id="account-name-val">Developer Console</h4>
+                        <p class="plan-tag" id="account-provider-tag">Email Verified Profile</p>
                     </div>
                 </div>
                 
                 <div class="account-stats-grid">
                     <div class="stat-card">
-                        <span class="label">Daily Request Cap</span>
-                        <span class="value">Unlimited (Rotated)</span>
+                        <span class="label">User Email</span>
+                        <span class="value" id="account-email-val">developer@domain.com</span>
                     </div>
                     <div class="stat-card">
                         <span class="label">Native Tools Enabled</span>
                         <span class="value">54 Tools</span>
                     </div>
                 </div>
-                
-                <div class="account-info-sections">
-                    <div class="info-row">
-                        <span>Environment OS:</span>
-                        <strong>Linux (Termux Environment)</strong>
-                    </div>
-                    <div class="info-row">
-                        <span>Service Port:</span>
-                        <strong>3000 (SSE Unified Server)</strong>
-                    </div>
+            </div>
+            <div class="modal-actions" style="flex-direction: column; gap: 8px;">
+                <button class="btn btn-secondary" onclick="closeAccountModal()" style="width: 100%;">Close Profile</button>
+                <button class="btn btn-primary" onclick="handleLogout()" style="background: #ef4444; border: none; width: 100%;">Log Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Photo Snapshot Modal -->
+    <div id="camera-modal" class="modal hidden">
+        <div class="modal-content" style="width: 500px;">
+            <div class="modal-header">
+                <h3>📷 Camera Snapshot</h3>
+                <button class="close-btn" onclick="closeCameraModal()">×</button>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                <video id="camera-video" autoplay playsinline style="width: 100%; max-height: 280px; border-radius: 12px; background: #000; object-fit: cover;"></video>
+                <canvas id="camera-canvas" style="display: none;"></canvas>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button class="btn btn-secondary" onclick="closeCameraModal()" style="flex: 1;">Cancel</button>
+                    <button class="btn btn-primary" onclick="captureCameraPhoto()" style="flex: 1;">Capture Photo</button>
                 </div>
             </div>
-            <div class="modal-actions">
-                <button class="btn btn-primary" onclick="closeAccountModal()">Close Dialog</button>
+        </div>
+    </div>
+
+    <!-- AI Image Studio Modal -->
+    <div id="image-studio-modal" class="modal hidden">
+        <div class="modal-content" style="width: 620px;">
+            <div class="modal-header">
+                <h3>🎨 AI Image Studio</h3>
+                <button class="close-btn" onclick="closeImageStudioModal()">×</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <label style="font-size: 13px; color: var(--text-secondary);">Describe the image you want to generate or edit:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="image-prompt-input" placeholder="e.g. Cyberpunk neon skyline, futuristic dark mode wallpaper..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff;">
+                    <button class="btn btn-primary" onclick="generateStudioImage()">Generate</button>
+                </div>
+                <div id="image-studio-preview" style="min-height: 220px; border: 1px dashed var(--border-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2);">
+                    <span style="color: var(--text-secondary); font-size: 13px;">Image preview will render here...</span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="closeImageStudioModal()">Close</button>
+                    <button class="btn btn-primary" id="insert-image-chat-btn" onclick="insertStudioImageToChat()" style="display: none;">Attach to Chat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Canvas Workspace Modal -->
+    <div id="canvas-drawer-modal" class="modal hidden">
+        <div class="modal-content" style="width: 90vw; height: 85vh; max-width: 1200px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <h3>🎨 Live Interactive Canvas</h3>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-secondary btn-sm active" id="canvas-tab-code" onclick="switchCanvasTab('code')">Code</button>
+                        <button class="btn btn-secondary btn-sm" id="canvas-tab-write" onclick="switchCanvasTab('write')">Writing & Essay</button>
+                        <button class="btn btn-secondary btn-sm" id="canvas-tab-slides" onclick="switchCanvasTab('slides')">Slides</button>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeCanvasDrawer()">×</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; overflow: hidden; margin-top: 12px;">
+                <textarea id="canvas-editor-input" placeholder="Type or edit HTML/JS/CSS code or markdown essay..." style="background: rgba(15,23,42,0.9); border: 1px solid var(--border-color); border-radius: 10px; color: #fff; padding: 14px; font-family: 'Fira Code', monospace; font-size: 13px; resize: none; outline: none; line-height: 1.5;" oninput="updateCanvasLivePreview()"></textarea>
+                <iframe id="canvas-live-frame" style="width: 100%; height: 100%; border: 1px solid var(--border-color); border-radius: 10px; background: #fff;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Intelligence Facts Modal -->
+    <div id="personal-intelligence-modal" class="modal hidden">
+        <div class="modal-content" style="width: 480px;">
+            <div class="modal-header">
+                <h3>🧠 Personal Intelligence Facts</h3>
+                <button class="close-btn" onclick="closePersonalIntelligenceModal()">×</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <p style="font-size: 13px; color: var(--text-secondary);">Tell InfinityChat about your stack, preferences, and learning style so responses are automatically tailored to you:</p>
+                <textarea id="personal-facts-input" rows="5" placeholder="e.g. Preferred language: TypeScript, OS: Linux, Stack: React + Express, Tone: Concise and direct code..." style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 12px; font-size: 13px; outline: none; resize: vertical;"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="closePersonalIntelligenceModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="savePersonalIntelligenceFacts()">Save Personalization</button>
+                </div>
             </div>
         </div>
     </div>

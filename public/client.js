@@ -1,5 +1,34 @@
 const MCP_URL = window.location.origin;
 
+// Custom Toast Notification Engine
+window.showToast = function(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    let iconSvg = '';
+    if (type === 'success') {
+        iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    } else if (type === 'error') {
+        iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+    } else if (type === 'warning') {
+        iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+    } else {
+        iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+    }
+
+    toast.innerHTML = `${iconSvg}<span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+};
+
 // 100 Providers with comprehensive model listings categorized
 const providersCatalog = {
     "LLM & Text Providers": [
@@ -204,49 +233,286 @@ window.togglePlusMenu = function(event) {
     pop.classList.toggle('hidden');
 };
 
+// Global Plus Menu Attachments & Modes State
+let attachedFiles = []; // { name, content, type }
+let activeDeepResearchMode = false;
+let activeGuidedLearningMode = false;
+let cameraStream = null;
+let currentStudioImage = null;
+
 window.triggerPlusAction = function(action) {
     const pop = document.getElementById('plus-menu-dropdown');
     if (pop) pop.classList.add('hidden');
 
     switch(action) {
         case 'add_file':
-            alert('File attachment interface loaded (simulate upload).');
+            document.getElementById('plus-file-input').click();
             break;
         case 'add_image':
-            alert('Image gallery browser selected.');
+            document.getElementById('plus-image-input').click();
             break;
         case 'camera':
-            alert('Host camera device handshake initialized.');
-            break;
         case 'click_picture':
-            alert('Taking photo snapshot...');
+            openCameraModal();
             break;
         case 'images':
-            useSuggestion('/preview <html><body><h2>AI Image Editor mockup</h2></body></html>');
+            openImageStudioModal();
             break;
         case 'canvas':
-            useSuggestion('/preview <html><body><h1>Canvas Sandbox Workspace</h1><p>Type code or essay drafts here...</p></body></html>');
+            openCanvasDrawer();
             break;
         case 'deep_research':
-            useSuggestion('/search latest developments');
+            activeDeepResearchMode = !activeDeepResearchMode;
+            showToast(`Deep Research Mode ${activeDeepResearchMode ? 'Activated 🔍' : 'Deactivated'}`, activeDeepResearchMode ? 'success' : 'info');
             break;
         case 'guided_learning':
-            useSuggestion('Give me a step by step guide to build a Node.js server.');
+            activeGuidedLearningMode = !activeGuidedLearningMode;
+            showToast(`Guided Learning Mode ${activeGuidedLearningMode ? 'Activated 🎓' : 'Deactivated'}`, activeGuidedLearningMode ? 'success' : 'info');
             break;
         default:
             console.log('Action triggered:', action);
     }
 };
 
+// --- File & Image Attachment Handlers ---
+window.handlePlusFileSelect = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        attachedFiles.push({ name: file.name, content: evt.target.result, type: 'file' });
+        renderAttachmentBadges();
+        showToast(`Attached file: ${file.name}`, 'success');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+};
+
+window.handlePlusImageSelect = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        attachedFiles.push({ name: file.name, content: evt.target.result, type: 'image' });
+        renderAttachmentBadges();
+        showToast(`Attached image: ${file.name}`, 'success');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+};
+
+function renderAttachmentBadges() {
+    let container = document.getElementById('chat-attachments-row');
+    const chatForm = document.getElementById('chat-form');
+    if (!container && chatForm) {
+        container = document.createElement('div');
+        container.id = 'chat-attachments-row';
+        container.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 12px; margin-bottom: 4px;';
+        chatForm.parentNode.insertBefore(container, chatForm);
+    }
+    if (!container) return;
+    container.innerHTML = '';
+    attachedFiles.forEach((att, idx) => {
+        const badge = document.createElement('span');
+        badge.className = 'attachment-badge';
+        const icon = att.type === 'image' ? '🖼️' : '📄';
+        badge.innerHTML = `${icon} ${escapeHtml(att.name)} <span class="remove-btn" onclick="removeAttachment(${idx})">×</span>`;
+        container.appendChild(badge);
+    });
+}
+
+window.removeAttachment = function(idx) {
+    attachedFiles.splice(idx, 1);
+    renderAttachmentBadges();
+};
+
+// --- Camera Capture Modal Controllers ---
+window.openCameraModal = async function() {
+    const modal = document.getElementById('camera-modal');
+    const video = document.getElementById('camera-video');
+    if (modal) modal.classList.add('open');
+
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        if (video) video.srcObject = cameraStream;
+    } catch(err) {
+        showToast(`Camera Access Failed: ${err.message}`, 'error');
+        closeCameraModal();
+    }
+};
+
+window.captureCameraPhoto = function() {
+    const video = document.getElementById('camera-video');
+    const canvas = document.getElementById('camera-canvas');
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/png');
+
+    const photoName = `photo_${Date.now()}.png`;
+    attachedFiles.push({ name: photoName, content: dataUrl, type: 'image' });
+    renderAttachmentBadges();
+    showToast('Photo captured and attached!', 'success');
+    closeCameraModal();
+};
+
+window.closeCameraModal = function() {
+    const modal = document.getElementById('camera-modal');
+    if (modal) modal.classList.remove('open');
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+};
+
+// --- AI Image Studio Controllers ---
+window.openImageStudioModal = function() {
+    const modal = document.getElementById('image-studio-modal');
+    if (modal) modal.classList.add('open');
+};
+
+window.generateStudioImage = function() {
+    const promptInput = document.getElementById('image-prompt-input');
+    const previewDiv = document.getElementById('image-studio-preview');
+    const insertBtn = document.getElementById('insert-image-chat-btn');
+    const prompt = promptInput ? promptInput.value.trim() : '';
+
+    if (!prompt) {
+        showToast('Please enter an image prompt first.', 'warning');
+        return;
+    }
+
+    showToast('Generating studio art canvas...', 'info');
+
+    // Create Canvas Artwork based on Prompt
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 384;
+    const ctx = canvas.getContext('2d');
+
+    const grad = ctx.createLinearGradient(0, 0, 512, 384);
+    grad.addColorStop(0, '#1e1b4b');
+    grad.addColorStop(0.5, '#4338ca');
+    grad.addColorStop(1, '#6366f1');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 384);
+
+    // Decorative geometric artwork
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.beginPath();
+    ctx.arc(256, 192, 120, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.fillText(prompt.slice(0, 35), 256, 180);
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = '#a5b4fc';
+    ctx.fillText('✨ Generated by InfinityChat Studio', 256, 215);
+
+    currentStudioImage = canvas.toDataURL('image/png');
+
+    if (previewDiv) {
+        previewDiv.innerHTML = `<img src="${currentStudioImage}" style="max-width: 100%; max-height: 260px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);" />`;
+    }
+    if (insertBtn) insertBtn.style.display = 'inline-block';
+    showToast('Image generated successfully!', 'success');
+};
+
+window.insertStudioImageToChat = function() {
+    if (!currentStudioImage) return;
+    const imageName = `studio_art_${Date.now()}.png`;
+    attachedFiles.push({ name: imageName, content: currentStudioImage, type: 'image' });
+    renderAttachmentBadges();
+    showToast('Attached studio image to prompt!', 'success');
+    closeImageStudioModal();
+};
+
+window.closeImageStudioModal = function() {
+    const modal = document.getElementById('image-studio-modal');
+    if (modal) modal.classList.remove('open');
+};
+
+// --- Live Interactive Canvas Controllers ---
+let activeCanvasTab = 'code';
+
+window.openCanvasDrawer = function() {
+    const modal = document.getElementById('canvas-drawer-modal');
+    if (modal) modal.classList.add('open');
+    switchCanvasTab('code');
+};
+
+window.switchCanvasTab = function(tab) {
+    activeCanvasTab = tab;
+    ['code', 'write', 'slides'].forEach(t => {
+        const btn = document.getElementById(`canvas-tab-${t}`);
+        if (btn) btn.classList.toggle('active', t === tab);
+    });
+
+    const editor = document.getElementById('canvas-editor-input');
+    if (editor) {
+        if (tab === 'code') {
+            editor.value = `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { background: #0f172a; color: #fff; font-family: sans-serif; padding: 24px; }\n    h1 { color: #60a5fa; }\n  </style>\n</head>\n<body>\n  <h1>InfinityChat Live Canvas</h1>\n  <p>Edit HTML, CSS, and JS in real-time!</p>\n</body>\n</html>`;
+        } else if (tab === 'write') {
+            editor.value = `# Essay & Writing Workspace\n\n## Title: The Future of Agentic AI\n\nAgentic AI systems combine local MCP servers with multi-turn reasoning and tool execution...`;
+        } else if (tab === 'slides') {
+            editor.value = `<div style="background:#1e293b; color:#fff; padding:40px; height:100%; box-sizing:border-box; border-radius:12px; font-family:sans-serif;">\n  <h1 style="color:#a855f7;">Slide 1: Overview</h1>\n  <p>Welcome to InfinityChat Presentation Mode.</p>\n</div>`;
+        }
+        updateCanvasLivePreview();
+    }
+};
+
+window.updateCanvasLivePreview = function() {
+    const editor = document.getElementById('canvas-editor-input');
+    const iframe = document.getElementById('canvas-live-frame');
+    if (!editor || !iframe) return;
+
+    let doc = editor.value;
+    if (activeCanvasTab === 'write') {
+        doc = `<!DOCTYPE html><html><head><style>body{font-family:sans-serif;padding:24px;color:#1e293b;line-height:1.6;}</style></head><body>${escapeHtml(doc).replace(/\n/g, '<br>')}</body></html>`;
+    }
+    iframe.srcdoc = doc;
+};
+
+window.closeCanvasDrawer = function() {
+    const modal = document.getElementById('canvas-drawer-modal');
+    if (modal) modal.classList.remove('open');
+};
+
+// --- Personal Intelligence Controllers ---
 window.togglePersonalIntelligence = function(checked) {
     personalIntelligenceActive = checked;
     localStorage.setItem('personal_intelligence_active', checked);
-    if (checked && !localStorage.getItem('user_facts')) {
-        const info = prompt("Please tell me some facts about yourself so I can personalize your future chat sessions (e.g., your programming stack, role, learning style):");
-        if (info) {
-            localStorage.setItem('user_facts', info);
-        }
+    if (checked) {
+        openPersonalIntelligenceModal();
+    } else {
+        showToast('Personal Intelligence disabled', 'info');
     }
+};
+
+window.openPersonalIntelligenceModal = function() {
+    const modal = document.getElementById('personal-intelligence-modal');
+    const input = document.getElementById('personal-facts-input');
+    if (input) input.value = localStorage.getItem('user_facts') || '';
+    if (modal) modal.classList.add('open');
+};
+
+window.savePersonalIntelligenceFacts = function() {
+    const input = document.getElementById('personal-facts-input');
+    if (input) {
+        localStorage.setItem('user_facts', input.value.trim());
+        showToast('Personalization facts updated successfully!', 'success');
+    }
+    closePersonalIntelligenceModal();
+};
+
+window.closePersonalIntelligenceModal = function() {
+    const modal = document.getElementById('personal-intelligence-modal');
+    if (modal) modal.classList.remove('open');
 };
 
 // Click outside drop down logic
@@ -388,7 +654,7 @@ let speechRecognizer = null;
 window.toggleVoiceInput = function() {
     const btn = document.getElementById('voice-input-btn');
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Speech recognition not supported in this browser');
+        showToast('Speech recognition not supported in this browser', 'warning');
         return;
     }
     if (!speechRecognizer) {
@@ -502,12 +768,12 @@ document.addEventListener('click', function(e) {
 // Fetch Active Models directly via backend proxy
 window.fetchActiveModels = async function(silent = false) {
     if (!selectedProviderObj) {
-        if (!silent) alert('Please select a provider first!');
+        if (!silent) showToast('Please select a provider first!', 'warning');
         return;
     }
     const key = document.getElementById('provider-key').value;
     if (!key && selectedProviderObj.id !== 'ollama' && selectedProviderObj.id !== 'llamacpp') {
-        if (!silent) alert('API Key is required to fetch models for this provider.');
+        if (!silent) showToast('API Key is required to fetch models for this provider.', 'warning');
         return;
     }
 
@@ -558,10 +824,10 @@ window.fetchActiveModels = async function(silent = false) {
 
         document.getElementById('model-input').value = modelsList[0];
         buildCustomDropdownList();
-        if (!silent) alert(`Successfully loaded ${modelsList.length} valid models from ${selectedProviderObj.name}!`);
+        if (!silent) showToast(`Successfully loaded ${modelsList.length} valid models from ${selectedProviderObj.name}!`, 'success');
 
     } catch(err) {
-        if (!silent) alert(`Failed to fetch models: ${err.message}`);
+        if (!silent) showToast(`Failed to fetch models: ${err.message}`, 'error');
     } finally {
         if (triggerBtn) triggerBtn.classList.remove('rotating');
     }
@@ -638,7 +904,7 @@ function selectCatalogProvider(provider) {
 // Add provider securely to the backend active loop list
 document.getElementById('save-provider-btn').addEventListener('click', async () => {
     if (!selectedProviderObj) {
-        alert('Please select a provider from the catalog first!');
+        showToast('Please select a provider from the catalog first!', 'warning');
         return;
     }
     const provider = selectedProviderObj.id;
@@ -655,7 +921,7 @@ document.getElementById('save-provider-btn').addEventListener('click', async () 
 
     const model = document.getElementById('model-input').value.trim();
     if (!model) {
-        alert('Please select or type a model ID!');
+        showToast('Please select or type a model ID!', 'warning');
         return;
     }
     const customUrl = document.getElementById('custom-url').value;
@@ -678,9 +944,10 @@ document.getElementById('save-provider-btn').addEventListener('click', async () 
         if (data.status === 'ok') {
             loadActiveProviders();
             document.getElementById('provider-key').value = '';
+            showToast('Provider profile saved & activated!', 'success');
         }
     } catch(err) {
-        alert(`Failed to add provider: ${err.message}`);
+        showToast(`Failed to add provider: ${err.message}`, 'error');
     }
 });
 
@@ -742,7 +1009,7 @@ window.switchHeaderModel = async function(id) {
 
 window.toggleConnector = function(name, enabled) {
     localStorage.setItem(`connector_${name}_active`, enabled);
-    alert(`${name.toUpperCase()} Integration Connector toggled: ${enabled ? 'Connected' : 'Disconnected'}`);
+    showToast(`${name.toUpperCase()} Connector ${enabled ? 'Connected' : 'Disconnected'}`, enabled ? 'success' : 'info');
 };
 
 window.removeProvider = async function(id) {
@@ -1521,11 +1788,11 @@ window.selectProject = async function(name) {
         });
         const data = await res.json();
         if (data.status === 'ok') {
-            alert(`Switched project sandbox successfully to:\n${data.path}`);
+            showToast(`Switched project sandbox to: ${data.path}`, 'success');
             closeAllDrawers();
         }
     } catch(err) {
-        alert(`Failed to select project: ${err.message}`);
+        showToast(`Failed to select project: ${err.message}`, 'error');
     }
 };
 
@@ -1533,7 +1800,7 @@ window.createNewProject = async function() {
     const input = document.getElementById('new-project-name');
     const name = input.value.trim();
     if (!name) {
-        alert('Please enter a valid folder name!');
+        showToast('Please enter a valid folder name!', 'warning');
         return;
     }
 
@@ -1546,13 +1813,13 @@ window.createNewProject = async function() {
         const data = await res.json();
         if (data.status === 'ok') {
             input.value = '';
-            alert(`Project folder "${data.name}" created and loaded!`);
+            showToast(`Project folder "${data.name}" created and loaded!`, 'success');
             loadProjects();
         } else {
-            alert(`Failed: ${data.error}`);
+            showToast(`Failed: ${data.error}`, 'error');
         }
     } catch(err) {
-        alert(`Failed to create project: ${err.message}`);
+        showToast(`Failed to create project: ${err.message}`, 'error');
     }
 };
 
@@ -1570,8 +1837,27 @@ window.toggleIconSidebar = function() {
     }
 };
 
-window.openAccountModal = function() {
-    document.getElementById('account-modal').classList.add('open');
+window.openAccountModal = async function() {
+    const modal = document.getElementById('account-modal');
+    const token = localStorage.getItem('auth_token');
+    
+    if (token) {
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.status === 'ok' && data.user) {
+                const u = data.user;
+                document.getElementById('account-name-val').textContent = u.name || 'Developer Console';
+                document.getElementById('account-email-val').textContent = u.email;
+                document.getElementById('account-provider-tag').textContent = `${u.provider.toUpperCase()} Verified Account`;
+            }
+        } catch(e) {
+            console.error('Failed to load profile details:', e);
+        }
+    }
+    if (modal) modal.classList.add('open');
 };
 
 window.closeAccountModal = function() {
@@ -1583,20 +1869,38 @@ let authMode = 'signup'; // signup or login
 
 window.checkAuthStatus = async function() {
     const modal = document.getElementById('auth-modal');
-    if (localStorage.getItem('auth_session') === 'active') {
-        if (modal) {
-            modal.classList.remove('open');
-            modal.classList.add('hidden');
-            modal.style.display = 'none';
+    const token = localStorage.getItem('auth_token');
+
+    if (token) {
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.status === 'ok' && data.user) {
+                if (modal) {
+                    modal.classList.remove('open');
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                }
+                return;
+            }
+        } catch(e) {
+            console.error('Session verify error:', e);
         }
-        return;
+    }
+
+    // Unauthenticated or expired session
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('open');
+        modal.style.display = 'flex';
     }
 
     try {
         const res = await fetch('/api/auth/ip-check');
         const data = await res.json();
         
-        // If IP address already visited, switch default view to sign-in
         if (data.exists) {
             authMode = 'login';
             document.getElementById('auth-modal-title').textContent = 'Sign In to Developer Console';
@@ -1604,7 +1908,7 @@ window.checkAuthStatus = async function() {
             document.getElementById('auth-modal-toggle-text').textContent = 'New user? Try signing up';
         }
     } catch(err) {
-        console.error('IP visitor validation failed:', err);
+        console.error('IP visitor check failed:', err);
     }
 };
 
@@ -1626,32 +1930,95 @@ window.toggleAuthMode = function() {
     }
 };
 
-window.handleAuthSubmit = function() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-password').value;
+window.handleAuthSubmit = async function() {
+    const email = document.getElementById('auth-email').value.trim();
+    const pass = document.getElementById('auth-password').value.trim();
+    
     if (!email || !pass) {
-        alert('Please fill out all credentials fields.');
+        showToast('Please fill out all credentials fields.', 'warning');
         return;
     }
-    localStorage.setItem('auth_session', 'active');
-    const modal = document.getElementById('auth-modal');
-    if (modal) {
-        modal.classList.remove('open');
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
+
+    const endpoint = authMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass })
+        });
+        const data = await res.json();
+
+        if (data.status === 'ok' && data.token) {
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('auth_user', JSON.stringify(data.user));
+            
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.classList.remove('open');
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+            showToast(`Welcome back, ${data.user.name || data.user.email}!`, 'success');
+        } else {
+            showToast(data.error || 'Authentication failed.', 'error');
+        }
+    } catch(err) {
+        showToast(`Authentication error: ${err.message}`, 'error');
     }
-    alert('Access token authorized successfully!');
 };
 
-window.handleSSOLogin = function(provider) {
-    localStorage.setItem('auth_session', 'active');
-    const modal = document.getElementById('auth-modal');
-    if (modal) {
-        modal.classList.remove('open');
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
+window.handleSSOLogin = async function(provider) {
+    showToast(`Initializing ${provider} SSO handshake...`, 'info');
+    try {
+        const res = await fetch('/api/auth/sso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider, name: `${provider} Developer` })
+        });
+        const data = await res.json();
+
+        if (data.status === 'ok' && data.token) {
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('auth_user', JSON.stringify(data.user));
+
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.classList.remove('open');
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+            showToast(`Authenticated via ${provider} SSO!`, 'success');
+        } else {
+            showToast(data.error || 'SSO authentication failed.', 'error');
+        }
+    } catch(err) {
+        showToast(`SSO error: ${err.message}`, 'error');
     }
-    alert(`Successfully authenticated via ${provider} SSO handshake.`);
+};
+
+window.handleLogout = async function() {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch(e) {}
+    }
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+
+    closeAccountModal();
+    showToast('Logged out successfully.', 'info');
+    
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) {
+        authModal.classList.remove('hidden');
+        authModal.classList.add('open');
+        authModal.style.display = 'flex';
+    }
 };
 
 // --- Templates Initializer ---
@@ -1664,13 +2031,13 @@ window.initializeTemplate = async function(templateId) {
         });
         const data = await res.json();
         if (data.status === 'ok') {
-            alert(`Starter template "${data.folderName}" initialized successfully!\nSandbox sandbox switched to: ${data.path}`);
+            showToast(`Starter template "${data.folderName}" initialized successfully! Sandbox switched to: ${data.path}`, 'success');
             closeAllDrawers();
         } else {
-            alert(`Failed: ${data.error}`);
+            showToast(`Failed: ${data.error}`, 'error');
         }
     } catch(err) {
-        alert(`Failed to initialize template: ${err.message}`);
+        showToast(`Failed to initialize template: ${err.message}`, 'error');
     }
 };
 
