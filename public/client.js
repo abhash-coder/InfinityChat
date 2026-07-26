@@ -1582,9 +1582,13 @@ window.closeAccountModal = function() {
 let authMode = 'signup'; // signup or login
 
 window.checkAuthStatus = async function() {
+    const modal = document.getElementById('auth-modal');
     if (localStorage.getItem('auth_session') === 'active') {
-        const modal = document.getElementById('auth-modal');
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.classList.remove('open');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
         return;
     }
 
@@ -1631,14 +1635,22 @@ window.handleAuthSubmit = function() {
     }
     localStorage.setItem('auth_session', 'active');
     const modal = document.getElementById('auth-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.remove('open');
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
     alert('Access token authorized successfully!');
 };
 
 window.handleSSOLogin = function(provider) {
     localStorage.setItem('auth_session', 'active');
     const modal = document.getElementById('auth-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.remove('open');
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
     alert(`Successfully authenticated via ${provider} SSO handshake.`);
 };
 
