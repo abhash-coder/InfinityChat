@@ -1,0 +1,9 @@
+{
+  "appId": "com.example.infinitychat",
+  "appName": "InfinityChat",
+  "webDir": "public",
+  "server": {
+    "url": "http://localhost:3000",
+    "cleartext": true
+  }
+}
