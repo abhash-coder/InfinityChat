@@ -252,40 +252,40 @@
                 <form id="chat-form" onsubmit="sendMessage(event)">
                     <button type="button" class="input-icon-btn" onclick="togglePlusMenu(event)" title="More Options">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
 
-                      <div class="input-controls" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                        <select id="chat-mode-select" class="input-mode-select" onchange="setChatMode(this.value)" title="Select Interaction Mode" style="background:transparent; border:1px solid var(--border-color); color:var(--text-primary); padding:4px 8px; border-radius:4px;">
-                          <option value="chat">Chat</option>
-                          <option value="plan">Plan</option>
-                          <option value="build">Build</option>
-                        </select>
-                        <button type="button" class="input-icon-btn" id="voice-input-btn" onclick="toggleVoiceInput()" title="Voice Input (Off)" style="margin-right:4px;">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    <select id="chat-mode-select" class="input-mode-select" onchange="setChatMode(this.value)" title="Select Interaction Mode">
+                        <option value="chat">Chat</option>
+                        <option value="plan">Plan</option>
+                        <option value="build">Build</option>
+                    </select>
+
+                    <button type="button" class="input-icon-btn" id="voice-input-btn" onclick="toggleVoiceInput()" title="Voice Input (Off)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    </button>
+
+                    <textarea id="chat-input" placeholder="Ask anything, type / for commands..." required oninput="handleInputAutocomplete(this)" onkeydown="handleInputKeys(event)"></textarea>
+
+                    <div class="chat-form-right-actions">
+                        <button type="button" class="input-icon-btn" id="voice-toggle-btn" onclick="toggleVoiceOutput()" title="Voice Response Output (Off)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
                         </button>
-                        <textarea id="chat-input" placeholder="Ask anything, type / for commands..." required oninput="handleInputAutocomplete(this)" onkeydown="handleInputKeys(event)"></textarea>
-                      </div>
 
-                    <!-- Speak Response Toggle Button -->
-                    <button type="button" class="input-icon-btn" id="voice-toggle-btn" onclick="toggleVoiceOutput()" title="Voice Response Output (Off)">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                            <line x1="12" y1="19" x2="12" y2="23"></line>
-                            <line x1="8" y1="23" x2="16" y2="23"></line>
-                        </svg>
-                    </button>
-
-                    <button type="submit" class="send-btn-pill" id="send-button" title="Send Message">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </button>
+                        <button type="submit" class="send-btn-pill" id="send-button" title="Send Message">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
                 </form>
                 <div class="footer-notice">InfinityChat may display inaccurate info, so double-check its responses.</div>
             </footer>
